@@ -1,0 +1,48 @@
+"""
+Module containing the definition of the galactic gravitational potentials.
+"""
+
+# Import necessary modules
+import sympy as smp
+
+# Global constants
+Omega = 20.0
+G = 4.302 * 10**(-6)
+# Bulge constants
+M_b = 5.0 * 10**(10)
+b = 1.9
+# Halo constants
+M_h0 = 10.7 * 10**(10)
+r_h = 12.0
+gamma = 1.02
+r_hmax = 100.0
+# Disk constants
+R_d = 2.0
+M_d = 8.56 * 10**(10)
+a_d = 5.3
+b_d = 0.25
+# Spiral constants
+h_z = 0.18
+r_0 = 8.0
+C = 8/(3*smp.pi)
+R_s = 3.0
+R_s0 = 6.0
+rho = 5.0 * 10**(7)
+pitch_angle = -13.0
+a = pitch_angle*smp.pi/180.0
+rho_0 = 5 * 10**7
+
+
+r, phi = smp.symbols("r phi", real=True)
+M_h = (M_h0*(r/r_h)**(gamma + 1))/(1 + (r/r_h)**gamma)
+cutoff = (((2/smp.pi)*smp.atan(r - R_s0) + 1) - 0.1)/1.9
+kappa = 2/(r*smp.Abs(smp.sin(a)))
+beta = (1 + kappa*h_z + 0.3*(kappa*h_z)**2)/(1 + 0.3*kappa*h_z)
+g = 2.0*(phi - smp.log(r/r_0)/smp.tan(a))
+sumxy1 = C/(kappa*beta)*smp.cos(g)
+V_b = -G*M_b/smp.sqrt(r**2 + b**2)
+V_h = -(G*M_h/r) - (G*M_h0/(gamma*r_h))*(gamma/(1 + (r/r_h)**gamma) - smp.log(1 + (r/r_h)**gamma))
+V_d = -G*M_d/smp.sqrt(r**2 + (a_d + b_d)**2)
+V_sp = -4.0*smp.pi*G*h_z*rho_0*cutoff*smp.exp(-(r - r_0)/R_s)*sumxy1
+
+

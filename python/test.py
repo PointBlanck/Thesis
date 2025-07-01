@@ -28,13 +28,10 @@ def plot_axisymmetric_potentials(r):
     disk = ptns.disk_potential(r)
     bulge = ptns.bulge_potential(r)
     halo = ptns.halo_potential(r)
-    total1 = disk[0:1200] + bulge[0:1200]
-    total2 = disk[1200:] + bulge[1200:] + halo[1200:]
-    disk_norm1 = disk[0:1200]/total1
-    disk_norm2 = disk[1200:]/total2
-    bulge_norm1 = bulge[0:1200]/total1
-    bulge_norm2 = bulge[1200:]/total2
-    halo_norm = halo[1200:]/total2
+    total = disk + bulge + halo
+    disk_norm = disk/total
+    bulge_norm = bulge/total
+    halo_norm = halo/total
 
     # Make the plots
     fig, ax = plt.subplots(1,2)
@@ -43,28 +40,28 @@ def plot_axisymmetric_potentials(r):
     ax[0].plot(r[1200:], halo[1200:], label="Halo")
     ax[0].grid(True)
     ax[0].legend()
-    ax[1].plot(r[0:1200], bulge_norm1, label="Bulge 1")
-    ax[1].plot(r[1200:], bulge_norm2, label="Bulge 2")
-    ax[1].plot(r[0:1200], disk_norm1, label="Disk 1")
-    ax[1].plot(r[1200:], disk_norm2, label="Disk 2")
-    ax[1].plot(r[1200:], halo_norm, label="Halo 1")
+    ax[1].plot(r, bulge_norm, label="Bulge")
+    ax[1].plot(r, disk_norm, label="Disk")
+    ax[1].plot(r, halo_norm, label="Halo")
     ax[1].set_xscale("log")
     ax[1].grid("True")
     ax[1].legend()
     plt.show()
 
-def f_strength():
+def f_strength(r):
     """
     This function plots the F-Strength of the potentials.
     """
-    pass
+    total = ptns.disk_potential(r) + ptns.bulge_potential(r)
+    vax_g = np.gradient(total)
+    return 0
 
 print("="*50)
 print("Program Initialization")
 print("="*50)
 print("Printing potentials...")
 print("-"*50)
-r = np.linspace(1, 100, 10000)
+r = np.linspace(0.01, 100, 10000)
 plot_axisymmetric_potentials(r)
 print("-"*50)
 print("Closing...")

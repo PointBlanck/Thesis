@@ -57,7 +57,7 @@ def halo_potential(r):
     """
     r_ratio = r/r_h
     M_hr = (M_h0*((r_ratio)**(gamma+1.0)))/(1 + r_ratio**gamma)
-    return ((-G*M_hr)/r) + ((G*M_h0)/(gamma*r))*((-gamma/(1+(r_ratio**gamma))) + (np.log(1 + r_ratio)**gamma))
+    return ((-G*M_hr)/r) + ((G*M_h0)/(gamma*r_h))*((-gamma/(1+(r_ratio**gamma))) + (np.log(1 + r_ratio**gamma)))
 
 def spiral_potential(r, phi):
     """
