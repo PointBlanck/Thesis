@@ -59,6 +59,16 @@ def f_strength():
     """
     pass
 
+print("="*50)
+print("Program Initialization")
+print("="*50)
+print("Printing potentials...")
+print("-"*50)
 r = np.linspace(1, 100, 10000)
 plot_axisymmetric_potentials(r)
+print("-"*50)
+print("Closing...")
+print("="*50)
+print("Program Finished Succesfully!")
+print("="*50)
 
