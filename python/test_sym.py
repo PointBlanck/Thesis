@@ -67,6 +67,6 @@ def f_strength(r, phi):
 
 r = np.linspace(0.01, 100, 10000)
 phi = np.linspace(0, 2*np.pi, 1000)
-#potentials(r, phi)
+potentials(r, phi)
 r = np.linspace(0.01, 25, 1000)
 f_strength(r, phi)
