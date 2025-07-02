@@ -35,6 +35,7 @@ rho_0 = 10**7
 
 # Define the potentials symbolically.
 r, phi = smp.symbols("r phi", real=True)
+x, y = smp.symbols("x y", real=True)
 #M_h = (M_h0*(r/r_h)**(gamma + 1))/(1 + (r/r_h)**gamma)
 cutoff = (((2/smp.pi)*smp.atan(r - R_s0) + 1) - 0.1)/1.9
 kappa = 2/(r*smp.Abs(smp.sin(a)))
@@ -47,20 +48,52 @@ V_d = -G*M_d/smp.sqrt(r**2 + (a_d + b_d)**2)
 V_sp = -4.0*smp.pi*G*h_z*rho_0*cutoff*smp.exp(-(r - r_0)/R_s)*sumxy1
 V_tot = V_d + V_b
 
-# Calculate the partial derivatives needed.
+# Calculate the first order partial derivatives needed.
 dV_totdr = smp.diff(V_tot, r)
 dV_spdr = smp.diff(V_sp, r)
 dV_spdphi = smp.diff(V_sp, phi)
 
+#Calculate the second order derivatives needed.
+d2V_totdr2 = smp.diff(dV_totdr, r)
+d2V_spdr2 = smp.diff(dV_spdr, r)
+d2V_spdphi2 = smp.diff(dV_spdphi, phi)
+
+# Converting them into cartesian coordinates
+subs = {
+    r: smp.sqrt(x**2 + y**2),
+    phi: smp.atan2(y, x)
+}
+c_dV_totdr = dV_totdr.subs(subs)
+c_dV_spdr = dV_spdr.subs(subs)
+c_dV_spdphi = dV_spdphi.subs(subs)
+c_d2V_totdr2 = d2V_totdr2.subs(subs)
+c_d2V_spdr2 = d2V_spdr2.subs(subs)
+c_d2V_spdphi2 = d2V_spdphi2.subs(subs)
+
+
 # Lambdify all potentials so they can be worked with numpy.
 disk_potential = smp.lambdify(r, V_d, 'numpy')
 bulge_potential = smp.lambdify(r, V_b, 'numpy')
+total_potential = smp.lambdify(r, V_tot, 'numpy')
 #halo_potential = smp.lambdify(r, V_h, 'numpy')
 spiral_potential = smp.lambdify((r, phi), V_sp, 'numpy')
 total_potential_derivative = smp.lambdify(r, dV_totdr, 'numpy')
 spiral_potential_dr_derivative = smp.lambdify((r, phi), dV_spdr, 'numpy')
 spiral_potential_dphi_derivative = smp.lambdify((r,phi), dV_spdphi, 'numpy')
+second_total_potential_dr_derivative = smp.lambdify(r, d2V_totdr2, 'numpy')
+second_spiral_potential_dr_derivative = smp.lambdify((r, phi), d2V_spdr2, 'numpy')
+second_spiral_potential_dphi_derivative = smp.lambdify((r, phi), d2V_spdphi2, 'numpy')
+print(d2V_spdphi2)
+print(c_d2V_spdphi2)
+
+# Convert them into cartesian coordinates
+c_total_potential_derivative = smp.lambdify((x, y), c_dV_totdr, 'numpy')
+c_spiral_potential_dr_derivative = smp.lambdify((x, y), c_dV_spdr, 'numpy')
+c_spiral_potential_dphi_derivative = smp.lambdify((x,y), c_dV_spdphi, 'numpy')
+c_second_total_potential_dr_derivative = smp.lambdify((x, y), c_d2V_totdr2, 'numpy')
+c_second_spiral_potential_dr_derivative = smp.lambdify((x, y), c_d2V_spdr2, 'numpy')
+c_second_spiral_potential_dphi_derivative = smp.lambdify((x, y), c_d2V_spdphi2, 'numpy')
 
 
-
+print()
 
