@@ -83,8 +83,6 @@ spiral_potential_dphi_derivative = smp.lambdify((r,phi), dV_spdphi, 'numpy')
 second_total_potential_dr_derivative = smp.lambdify(r, d2V_totdr2, 'numpy')
 second_spiral_potential_dr_derivative = smp.lambdify((r, phi), d2V_spdr2, 'numpy')
 second_spiral_potential_dphi_derivative = smp.lambdify((r, phi), d2V_spdphi2, 'numpy')
-print(d2V_spdphi2)
-print(c_d2V_spdphi2)
 
 # Convert them into cartesian coordinates
 c_total_potential_derivative = smp.lambdify((x, y), c_dV_totdr, 'numpy')
