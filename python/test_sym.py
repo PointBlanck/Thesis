@@ -41,9 +41,11 @@ def potentials(r, phi):
     ax[0].set_xlabel("r [kpc]")
     ax[0].set_ylabel("Log(V)")
     ax[0].set_yscale("log")
+    ax[0].set_xlim(0,20)
     ax[1].plot(phi, ptnsm.spiral_potential(7, phi), label="Spiral Potential")
     ax[1].legend()
     ax[1].grid(True)
+    ax[1].set_xlim(0, 2*np.pi)
     ax[1].set_title("Spiral Potential on r = 7")
     plt.show()
     print(50*"=")
@@ -55,7 +57,7 @@ def preprocess(r, phi, what="all"):
     """
     Plots the f-strength of the potential perturbation.
     """
-    #fig, ax = plt.subplots(2, 2, layout="constrained")
+    fig, ax = plt.subplots(2, 2, layout="constrained")
     if what == "all":
         # F-Strength Plotting
         R, F = np.meshgrid(r, phi)
@@ -68,28 +70,45 @@ def preprocess(r, phi, what="all"):
         ax[0][0].set_title("F-Strength")
         ax[0][0].set_xlabel("r [kpc]")
         ax[0][0].set_ylabel("$F_{all}$")
+        ax[0][0].set_xlim(0,20)
 
         # Rotation curve
         U_rot = np.sqrt(r*ptnsm.total_potential_derivative(r))
         ax[0][1].plot(r, U_rot)
         ax[0][1].set_title("Rotation Curve")
         ax[0][1].set_xlabel("r")
-        ax[0][1].set_ylabel("U_rot")
-        ax[0][1].set_xlim(0,25)
+        ax[0][1].set_ylabel("$U_{rot}$")
+        ax[0][1].set_xlim(0,20)
         ax[0][1].grid(True)
 
         # Spiral potential plotting
-        X = np.linspace(-20, 20, 1000)
-        Y = np.linspace(-20, 20, 1000)
-        x, y = np.meshgrid(X,Y)
-        #laplacian1 = ptnsm.c_second_total_potential_dr_derivative(x,y) + (1/np.sqrt(x**2 + y**2))*ptnsm.c_total_potential_derivative(x,y)
-        laplacian = ptnsm.c_second_spiral_potential_dr_derivative(x,y) + (1/np.sqrt(x**2 + y**2))*ptnsm.c_spiral_potential_dr_derivative(x,y) + (1/(x**2 + y**2))*ptnsm.c_second_spiral_potential_dphi_derivative(x,y)
-        #laplacian = laplacian1 + laplacian2
+        #????????????????????????????????????????????????????????
+        # Can be significantly improved. Right now it calculates the
+        # ptnsn.second_spiral_potential_dr_derivative of every point,
+        # while it can just do it on the ones that we want after we pick them.
+        #????????????????????????????????????????????????????????
+        R, F = np.meshgrid(r, phi)
+        laplacian = ptnsm.second_spiral_potential_dr_derivative(R, F) + (1/R)*ptnsm.spiral_potential_dr_derivative(R,F) + (1/(R**2))*ptnsm.second_spiral_potential_dphi_derivative(R,F)
         density = laplacian/(4*np.pi*ptnsm.G)
-        ax[1][0].pcolormesh(X,Y,density, cmap="inferno")
+        density_grad_r = np.gradient(density, axis = 1)
+        mask1 = np.abs(density_grad_r) < 2.5
+        mask2 = ptnsm.second_spiral_potential_dr_derivative(R, F) > 0
+        mask3 = R < 10.0
+        mask4 = R > 2.0
+        mask = mask1*mask2*mask3*mask4
+        mask_r = np.array(R[mask])
+        mask_f = np.array(F[mask])
+        mask_x = mask_r*np.cos(mask_f)
+        mask_y = mask_r*np.sin(mask_f)
+        x = R*np.cos(F)
+        y = R*np.sin(F)
+        mesh1 = ax[1][0].pcolormesh(x, y, density, cmap='magma')
+        fig.colorbar(mesh1, ax=ax[1][0])
+        ax[1][0].scatter(mask_x[~np.isnan(mask_x)], mask_y[~np.isnan(mask_y)], c="black", s=5)
         ax[1][0].set_title("Isodensity color map")
         ax[1][0].set_xlabel("x")
         ax[1][0].set_ylabel("y")
+        ax[1][0].set_aspect("equal")
 
         # Angular velocity plotting
         Omega = np.sqrt((1/r)*ptnsm.total_potential_derivative(r))
@@ -110,36 +129,38 @@ def preprocess(r, phi, what="all"):
 
     else:
         # Spiral potential plotting
-        fig, ax = plt.subplots()
+        #????????????????????????????????????????????????????????
+        # Can be significantly improved. Right now it calculates the
+        # ptnsn.second_spiral_potential_dr_derivative of every point,
+        # while it can just do it on the ones that we want after we pick them.
+        #????????????????????????????????????????????????????????
         R, F = np.meshgrid(r, phi)
-        #X = np.linspace(-20, 20, 1000)
-        #Y = np.linspace(-20, 20, 1000)
-        #x, y = np.meshgrid(X,Y)
-        #laplacian = ptnsm.c_second_total_potential_dr_derivative(x,y) + (1/np.sqrt(x**2 + y**2))*ptnsm.c_total_potential_derivative(x,y)
-        #c_laplacian = ptnsm.c_second_spiral_potential_dr_derivative(x,y) + (1/np.sqrt(x**2 + y**2))*ptnsm.c_spiral_potential_dr_derivative(x,y) + (1/(x**2 + y**2))*ptnsm.c_second_spiral_potential_dphi_derivative(x,y)
         laplacian = ptnsm.second_spiral_potential_dr_derivative(R, F) + (1/R)*ptnsm.spiral_potential_dr_derivative(R,F) + (1/(R**2))*ptnsm.second_spiral_potential_dphi_derivative(R,F)
-        #laplacian = laplacian1 + laplacian2
-        #c_density = c_laplacian/(4*np.pi*ptnsm.G)
         density = laplacian/(4*np.pi*ptnsm.G)
-        density_grad = np.gradient(density)
-        # Calculating the minima in the radial direction.
-        # That way we will get the minima that follows the peak of the spiral.
-        # I need to create a mask that selects only the points that the radial gradient comes close to zero.
-        # Then I use that to select the appropriate fs and then I plot the result. FUCK ME!
-        #X = R* np.cos(F)
-        #Y = R* np.sin(F)
-        #mask_X = mask_R*np.cos(mask_F)
-        #mask_Y = mask_R*np.sin(mask_F)
-        #ax.pcolormesh(X,Y,density, cmap="inferno")
-        #ax.scatter(mask_X, mask_Y)
-        #ax.set_title("Isodensity color map")
-        #ax.set_xlabel("x")
-        #ax.set_ylabel("y")
-        #plt.show()
+        density_grad_r = np.gradient(density, axis = 1)
+        mask1 = np.abs(density_grad_r) < 10
+        mask2 = ptnsm.second_spiral_potential_dr_derivative(R, F) > 0
+        mask3 = R < 10.0
+        mask4 = R > 2.0
+        mask = mask1*mask2*mask3*mask4
+        mask_r = np.array(R[mask])
+        mask_f = np.array(F[mask])
+        mask_x = mask_r*np.cos(mask_f)
+        mask_y = mask_r*np.sin(mask_f)
+        x = R*np.cos(F)
+        y = R*np.sin(F)
+        mesh1 = ax[1][0].pcolormesh(x, y, density, cmap='magma')
+        fig.colorbar(mesh1, ax=ax[1][0])
+        ax[1][0].scatter(mask_x[~np.isnan(mask_x)], mask_y[~np.isnan(mask_y)], c="black", s=5)
+        ax[1][0].set_title("Isodensity color map")
+        ax[1][0].set_xlabel("x")
+        ax[1][0].set_ylabel("y")
+        ax[1][0].set_aspect("equal")
+        plt.show()
 
     return 0
 
-r = np.linspace(0.01, 25, 10000)
-phi = np.linspace(0, 2*np.pi, 1000)
-#potentials(r, phi)
-preprocess(r, phi, what="bruh")
+r = np.linspace(0.01, 20, 5000)
+phi = np.linspace(0, 2*np.pi, 5000)
+potentials(r, phi)
+preprocess(r, phi)
