@@ -31,7 +31,7 @@ R_s0 = 6.0
 rho = 5.0 * 10**(7)
 pitch_angle = -13.0
 a = pitch_angle*smp.pi/180.0
-rho_0 = 10**7
+rho_0 = 5.0*10**7 # Remember to change this for preprocessing stage if you want to have the same results as the paper.
 
 # Define the potentials symbolically.
 r, phi = smp.symbols("r phi", real=True)
@@ -70,6 +70,9 @@ c_d2V_totdr2 = d2V_totdr2.subs(subs)
 c_d2V_spdr2 = d2V_spdr2.subs(subs)
 c_d2V_spdphi2 = d2V_spdphi2.subs(subs)
 
+# Define angular velocity and epicyclic frequency
+oo = smp.sqrt((1/r)*dV_totdr)
+epic = smp.sqrt(d2V_totdr2 + (3/r)*dV_totdr)
 
 # Lambdify all potentials so they can be worked with numpy.
 disk_potential = smp.lambdify(r, V_d, 'numpy')
@@ -84,6 +87,10 @@ second_total_potential_dr_derivative = smp.lambdify(r, d2V_totdr2, 'numpy')
 second_spiral_potential_dr_derivative = smp.lambdify((r, phi), d2V_spdr2, 'numpy')
 second_spiral_potential_dphi_derivative = smp.lambdify((r, phi), d2V_spdphi2, 'numpy')
 
+# Lambdify omega and epicyclic
+omega = smp.lambdify(r, oo, 'numpy')
+epicyclic = smp.lambdify(r, epic, 'numpy')
+
 # Convert them into cartesian coordinates
 c_total_potential_derivative = smp.lambdify((x, y), c_dV_totdr, 'numpy')
 c_spiral_potential_dr_derivative = smp.lambdify((x, y), c_dV_spdr, 'numpy')
@@ -91,7 +98,4 @@ c_spiral_potential_dphi_derivative = smp.lambdify((x,y), c_dV_spdphi, 'numpy')
 c_second_total_potential_dr_derivative = smp.lambdify((x, y), c_d2V_totdr2, 'numpy')
 c_second_spiral_potential_dr_derivative = smp.lambdify((x, y), c_d2V_spdr2, 'numpy')
 c_second_spiral_potential_dphi_derivative = smp.lambdify((x, y), c_d2V_spdphi2, 'numpy')
-
-
-print()
 
