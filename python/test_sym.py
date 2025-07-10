@@ -6,7 +6,6 @@ import potentials_sym as ptnsm
 import matplotlib.pyplot as plt
 import numpy as np
 import sympy as smp
-import scipy as scp
 
 def potentials(r, phi):
     """
