@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import potentials_sym as ptnsm
 
 # Define some parameters
-r_c = 1.0 # Radius from center of galaxy in kpc
+r_c = 2.0 # Radius from center of galaxy in kpc
 period = 2*np.pi/(ptnsm.omega(r_c))
 
 # Define the hamiltonian and its partial derivatives.
@@ -32,7 +32,7 @@ hamiltonian_dpphi = smp.lambdify((r, phi, pr, pphi), dH_dpphi, 'numpy')
 
 # Calculate the initial values
 y0 = [r_c, np.pi/2, 0.0, (r_c**2)*ptnsm.omega(r_c)]
-t_span = (0, 200*period)
+t_span = (0, 300*period)
 
 # Define system to be integrated.
 def system(t, y):
@@ -57,9 +57,9 @@ event.direction = -1
 
 
 fig, ax = plt.subplots(layout='constrained')
-for ksi0 in [0.2, 0.4, 0.65]:
-    y0[0] = r_c + ksi0
-    sol = scp.solve_ivp(system, t_span, y0, events=event, rtol=3e-14, atol=1e-15, method='RK45')
+for ksi0 in [0.3, 0.5, 1.0]:
+    y0[0] = r_c - ksi0
+    sol = scp.solve_ivp(system, t_span, y0, events=event, rtol=3e-14, atol=1e-15, method='Radau')
     ksi = r_c - sol.y_events[0][:,0]
     pksi = -sol.y_events[0][:,2]
     ax.scatter(ksi, pksi, s=20, c='black')

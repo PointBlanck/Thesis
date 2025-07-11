@@ -31,7 +31,7 @@ R_s0 = 6.0
 rho = 5.0 * 10**(7)
 pitch_angle = -13.0
 a = pitch_angle*smp.pi/180.0
-rho_0 = 5.0*10**7 # Remember to change this for preprocessing stage if you want to have the same results as the paper.
+rho_0 = 15.0*10**7 # Remember to change this for preprocessing stage if you want to have the same results as the paper.
 
 # Define the potentials symbolically.
 r, phi = smp.symbols("r phi", real=True)
