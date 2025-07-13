@@ -43,7 +43,7 @@ print(energy)
 # Integrate
 event.direction = -1
 fig, ax = plt.subplots(layout='constrained')
-for ksi0 in [0.05, 0.5, 0.8, 0.98, 1.5]:
+for ksi0 in [0.1, 0.5, 1.0, 1.2, 1.3, 1.55, 1.6, 1.9]:
     # Define initial conditions
     pksi0 = -50.0
     r0 = rc - ksi0
