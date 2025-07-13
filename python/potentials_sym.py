@@ -7,7 +7,7 @@ Lines pertaining to the halo potential have been commented off.
 import sympy as smp
 
 # Global constants
-Omega = 20.0
+Omega = 15.0
 G = 4.302 * 10**(-6)
 # Bulge constants
 M_b = 5.0 * 10**(10)
