@@ -8,12 +8,7 @@ import scipy.integrate as scp
 import matplotlib.pyplot as plt
 import potentials as ptns
 
-# Define important quantities
-rc = 2.0
-kappac = ptns.epicyclic_frequency(rc)
-omegac = ptns.angular_velocity(rc)
-pphic = ptns.angular_velocity(rc)*rc**2
-energy = ptns.energy_cyclic(rc, pphic)
+lines = []
 
 # Define the system to be integrated.
 def system(t, y):
@@ -34,29 +29,34 @@ def event(t, y):
     """
     return np.cos(y[1])
 
-# Print important quantities
-print(kappac)
-print((2*np.pi)/omegac)
-print(pphic)
-print(energy)
-
 # Integrate
 event.direction = -1
+plt.ion()
 fig, ax = plt.subplots(layout='constrained')
-for ksi0 in [0.1, 0.5, 1.0, 1.2, 1.3, 1.55, 1.6, 1.9]:
+def integrate(ksi_init, pksi_init, tol, steps, rc):
+    kappac = ptns.epicyclic_frequency(rc)
+    omegac = ptns.angular_velocity(rc)
+    pphic = ptns.angular_velocity(rc)*rc**2
+    energy = ptns.energy_cyclic(rc, pphic)
+
+    # Print important quantities
+    print(kappac)
+    print((2*np.pi)/omegac)
+    print(pphic)
+    print(energy)
+    
     # Define initial conditions
-    pksi0 = -50.0
-    r0 = rc - ksi0
+    r0 = rc - ksi_init
     phi0 = np.pi/2.0
-    pr0 = -pksi0
+    pr0 = -pksi_init
     pphi0 = (r0**2)*ptns.Omg_sp + r0*np.sqrt((r0**2)*(ptns.Omg_sp**2) - (pr0**2) - 2*ptns.total_potential(r0, phi0) + 2*energy)
     y0 = [r0, phi0, pr0, pphi0]
     print(y0)
     period = 2*np.pi/(omegac)
-    t_span = (0, 300*period)
-    sol = scp.solve_ivp(system, t_span, y0, events=event, rtol=1e-8, method="Radau")
-    ax.scatter(rc - sol.y_events[0][1:,0], -sol.y_events[0][1:,2], c='black', s=10)
-ax.set_xlabel("r")
-ax.set_ylabel("$P_ξ$")
-ax.set_box_aspect(1)
-plt.show()
+    t_span = (0, steps*period)
+    sol = scp.solve_ivp(system, t_span, y0, events=event, rtol=tol, method="Radau")
+    lines.append(ax.scatter(rc - sol.y_events[0][1:,0], -sol.y_events[0][1:,2], c='black', s=10))
+#ax.set_xlabel("r")
+#ax.set_ylabel("$P_ξ$")
+#ax.set_box_aspect(1)
+#plt.show()
