@@ -23,7 +23,7 @@ h_z = 0.18 # kpc
 r_0 = 8.0 # kpc
 C = 8/(3*np.pi)
 r_sp = 3.0 # kpc
-rho_0 = 5.0e7
+rho_0 = 15.0e7
 pitch_angle = -13.0
 a = pitch_angle*np.pi/(180.0)
 
