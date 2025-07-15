@@ -60,19 +60,30 @@ def integrate(ksi_init, pksi_init, tol, steps, rc):
     t_span = (0, steps*period)
     sol = scp.solve_ivp(system, t_span, y0, rtol=tol, events=event, method="Radau")
     lines.append(ax.scatter(rc - sol.y_events[0][1:,0], -sol.y_events[0][1:,2], c='black', s=10))
-
+"""
 def orbit(ksi_init, pksi_init, tol, steps, rc):
+    # Info
     kappac = ptns.epicyclic_frequency(rc)
     omegac = ptns.angular_velocity(rc)
     pphic = ptns.angular_velocity(rc)*rc**2
     energy = ptns.energy_cyclic(rc, pphic)
+
+    for r0 in np.linspace(0.01, rc, steps):
     
-    # Define initial conditions
-    r0 = rc - ksi_init
-    phi0 = np.pi/2.0
-    pr0 = -pksi_init
-    pphi0 = (r0**2)*ptns.Omg_sp + r0*np.sqrt((r0**2)*(ptns.Omg_sp**2) - (pr0**2) - 2*ptns.total_potential(r0, phi0) + 2*energy)
-    y0 = [r0, phi0, pr0, pphi0]
+        # Define initial conditions
+        phi0 = np.pi/2.0
+        pr0 = -pksi_init
+        pphi0 = (r0**2)*ptns.Omg_sp + r0*np.sqrt((r0**2)*(ptns.Omg_sp**2) - (pr0**2) - 2*ptns.total_potential(r0, phi0) + 2*energy)
+        y0 = [r0, phi0, pr0, pphi0]
+        # Integrate
+        period = 2*np.pi/(omegac)
+        t_span = (0, 1.5*period)
+        sol = scp.solve_ivp(system, t_span, y0, rtol=tol, events=event, method="Radau")
+        r = sol.y[0,:]
+        phi = sol.y[1,:]
+        x = r*np.cos(phi)
+        y = r*np.sin(phi)
+        ax.plot(x, y)
     
     # Print important quantities
     print('Epicyclic frequency:', kappac)
@@ -81,14 +92,10 @@ def orbit(ksi_init, pksi_init, tol, steps, rc):
     print('P_phic:', pphic)
     print('Energy of cyclic movement:', energy)
     print('Number of periods:', steps)
-    print('Initial conditions:', y0)
+    print('Initial conditions:', y0)"""
 
-    # Integrate
-    period = 2*np.pi/(omegac)
-    t_span = (0, steps*period)
-    sol = scp.solve_ivp(system, t_span, y0, rtol=tol, events=event, method="Radau")
-    ax.plot(rc - sol.y[0,:], -sol.y[2,:])
-
+    
+    
 ax.set_xlabel("ξ")
 ax.set_ylabel("$P_ξ$")
 ax.set_box_aspect(1)

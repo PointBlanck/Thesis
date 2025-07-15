@@ -57,6 +57,9 @@ dVax = smp.diff(V_ax, r)
 ddVax = smp.diff(dVax, r)
 dVsp_dr = smp.diff(V_sp, r)
 dVsp_dphi = smp.diff(V_sp, phi)
+ddVsp_drdr = smp.diff(dVsp_dr, r)
+ddVsp_dphidphi = smp.diff(dVsp_dphi, phi)
+delta = ddVsp_drdr + (1/r)*dVsp_dr + 1/(r**2)*ddVsp_dphidphi
 dH_dr = smp.diff(H, r)
 dH_dphi = smp.diff(H, phi)
 dH_dpr = smp.diff(H, pr)
@@ -88,6 +91,7 @@ hamiltonian_dr = smp.lambdify((r,phi,pr,pphi), dH_dr, 'numpy')
 hamiltonian_dphi = smp.lambdify((r,phi,pr,pphi), dH_dphi, 'numpy')
 hamiltonian_dpr = smp.lambdify((r,phi,pr,pphi), dH_dpr, 'numpy')
 hamiltonian_dpphi = smp.lambdify((r,phi,pr,pphi), dH_dpphi, 'numpy')
+laplacian = smp.lambdify((r, phi), delta, 'numpy')
 # Lambdify spiral potential derivatives
 spiral_potential_dr1 = smp.lambdify((r,phi), dVsp_dr, 'numpy')
 spiral_potential_dphi1 = smp.lambdify((r,phi), dVsp_dphi, 'numpy')
@@ -116,7 +120,6 @@ ax[0][0].plot(ar, angular_velocity(ar) - epicyclic_frequency(ar)/2.0, label='Ω 
 ax[0][0].plot(ar, angular_velocity(ar) + epicyclic_frequency(ar)/2.0, label='Ω + κ/2')
 ax[0][0].plot(ar, angular_velocity(ar) - epicyclic_frequency(ar)/4.0, label='Ω - κ/4')
 ax[0][0].plot(ar, 15*np.ones(len(ar)))
-ax[0][0].plot(ar, 20*np.ones(len(ar)))
 ax[0][0].set_xlabel("r")
 ax[0][0].set_ylabel("Ω")
 ax[0][0].legend()
@@ -135,5 +138,47 @@ ax[0][1].set_xlabel('r')
 ax[0][1].set_ylabel('V')
 ax[0][1].grid(True)
 ax[0][1].legend()
+# Plot spiral density and minima
+# Calculate spiral density
+x, y = np.meshgrid(np.linspace(-20,20,1000), np.linspace(-20,20,1000))
+r = np.sqrt(x**2 + y**2)
+phi = np.atan2(y,x)
+density = laplacian(r,phi)/(4.0*np.pi*G)
+# Calculate minima
+# Define mask
+grad_den_y, grad_den_x = np.gradient(density)
+mask1 = (np.abs(np.cos(phi)*grad_den_x + np.sin(phi)*grad_den_y) < 20000)
+mask2 = np.sqrt(x**2 + y**2) < 10
+mask3 = np.sqrt(x**2 + y**2) > 2
+mask4 = density > 0.0
+mask = mask1*mask2*mask3*mask4
+minima_x = np.where(mask, x, False)
+minima_y = np.where(mask, y, False)
+minima_x_arr = minima_x[minima_x != 0.0]
+minima_y_arr = minima_y[minima_y != 0.0]
+pos = ax[1][0].pcolor(x, y, density, cmap='magma')
+ax[1][0].scatter(minima_x_arr, minima_y_arr, c='black', s=5)
+ax[1][0].set_box_aspect(1)
+ax[1][0].set_xlabel('x')
+ax[1][0].set_ylabel('y')
+ax[1][0].set_title('Spiral density and minima')
+ax[1][0].set_aspect('auto')
+fig.colorbar(pos, ax=ax[1][0])
+print('Max of spiral:', np.max(density))
+# Plot the f-strength
+ar, fi = np.meshgrid(ar, fi)
+for i in [1, 3, 6]:
+    f_sp = np.max(np.sqrt(((1/ar)*i*spiral_potential_dphi1(ar, fi))**2 + (i*spiral_potential_dr1(ar,fi))**2), axis=0)
+    f_ax = axisymmetric_potential_d1(ar[0,:])
+    f_strength = f_sp/f_ax
+    ax[1][1].plot(ar[0,:], f_strength, label=f'$ρ_0 = {i*5}$')
+    ax[1][1].set_box_aspect(1)
+    ax[1][1].set_title('F-Strength')
+    ax[1][1].legend()
+    ax[1][1].set_xlim(0, 20)
+    ax[1][1].set_ylim(0, 0.3)
+    ax[1][1].set_xlabel('r[kpc]')
+    ax[1][1].grid(True)
+    ax[1][1].set_ylabel('$F_{all}$')
 plt.show()
 
