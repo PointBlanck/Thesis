@@ -100,7 +100,7 @@ epicyclic_frequency = smp.lambdify(r, epic, 'numpy')
 angular_velocity = smp.lambdify(r, omega, 'numpy')
 
 # Print potentials and other important quantities
-print("V_b =",V_b)
+"""print("V_b =",V_b)
 print("V_d =",V_d)
 print("V_sp =",V_sp)
 print("H_ax =", H_ax)
@@ -181,4 +181,4 @@ for i in [1, 3, 6]:
     ax[1][1].grid(True)
     ax[1][1].set_ylabel('$F_{all}$')
 plt.show()
-
+"""
