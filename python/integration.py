@@ -2,7 +2,7 @@
 Module containing all the code relevant to the integration of the system.
 """
 
-import sympy as smp
+
 import numpy as np
 import scipy.integrate as scpint
 import scipy.optimize as scpopt
@@ -21,7 +21,7 @@ def system(t, y):
     dphidt = ptns.hamiltonian_dpphi(r, phi, pr ,pphi)
     dprdt = -ptns.hamiltonian_dr(r, phi, pr, pphi)
     dpphidt = -ptns.hamiltonian_dphi(r, phi, pr, pphi)
-    return [drdt, dphidt, dprdt, dpphidt]
+    return np.array([drdt, dphidt, dprdt, dpphidt])
 
 def system1(y, energy, phi0, pphi0):
     """
@@ -46,6 +46,7 @@ event.direction = -1
 plt.ion()
 fig, ax = plt.subplots(layout='constrained')
 def integrate(ksi_init, pksi_init, tol, steps, rc):
+    """ Integrates and stores a single Poincare instance. """
     kappac = ptns.epicyclic_frequency(rc)
     omegac = ptns.angular_velocity(rc)
     pphic = ptns.angular_velocity(rc)*rc**2
@@ -70,7 +71,7 @@ def integrate(ksi_init, pksi_init, tol, steps, rc):
     # Integrate
     period = 2*np.pi/(omegac)
     t_span = (0, steps*period)
-    sol = scpint.solve_ivp(system, t_span, y0, rtol=tol, events=event, method="Radau")
+    sol = scpint.solve_ivp(system, t_span, y0, rtol=tol, vectorized=True, events=event, method="Radau")
     lines.append(ax.scatter(rc - sol.y_events[0][1:,0], -sol.y_events[0][1:,2], c='black', s=10))
 
 def periodic(ksi_init, pksi_init, tol, steps, rc):
