@@ -1,12 +1,15 @@
 """
 Module containing all the code relevant to the integration of the system.
 """
-
+# See the module of ivp_solve and debug it and maybe add print statements to track progress more easily.
+# Look for different integrating package.
+# Check performance against Mathematica and make it show which integration method it is using
 
 import numpy as np
 import scipy.integrate as scpint
 import scipy.optimize as scpopt
 import matplotlib.pyplot as plt
+import datetime as dt
 import potentials as ptns
 
 lines = []
@@ -63,7 +66,7 @@ def integrate(ksi_init, pksi_init, tol, steps, rc):
     print('Epicyclic frequency:', kappac)
     print('Angular velocity:', omegac)
     print('Period:', (2*np.pi)/omegac)
-    print('$P_{φc}$', pphic)
+    print("P_φc", pphic)
     print('Energy of cyclic movement:', energy)
     print('Number of periods:', steps)
     print('Initial conditions:', y0)
@@ -71,8 +74,14 @@ def integrate(ksi_init, pksi_init, tol, steps, rc):
     # Integrate
     period = 2*np.pi/(omegac)
     t_span = (0, steps*period)
-    sol = scpint.solve_ivp(system, t_span, y0, rtol=tol, vectorized=True, events=event, method="Radau")
+    time1 = dt.datetime.now()
+    sol = scpint.solve_ivp(system, t_span, y0, rtol=tol, atol=tol, vectorized=True, events=event, method="Radau")
+    time2 = dt.datetime.now()
+    print("Integration Status Code:", sol.status)
+    print(sol.message)
+    print("Execution Time:", time2 - time1)
     lines.append(ax.scatter(rc - sol.y_events[0][1:,0], -sol.y_events[0][1:,2], c='black', s=10))
+    
 
 def periodic(ksi_init, pksi_init, tol, steps, rc):
     """
