@@ -47,7 +47,7 @@ def event(t, y):
 # Integrate
 event.direction = -1
 plt.ion()
-fig, ax = plt.subplots(layout='constrained')
+fig, ax = plt.subplots(1,2,layout='constrained')
 def integrate(ksi_init, pksi_init, tol, steps, rc):
     """ Integrates and stores a single Poincare instance. """
     kappac = ptns.epicyclic_frequency(rc)
@@ -80,8 +80,8 @@ def integrate(ksi_init, pksi_init, tol, steps, rc):
     print("Integration Status Code:", sol.status)
     print(sol.message)
     print("Execution Time:", time2 - time1)
-    lines.append(ax.scatter(rc - sol.y_events[0][1:,0], -sol.y_events[0][1:,2], c='black', s=10))
-    
+    lines.append(ax[0].scatter(rc - sol.y_events[0][1:,0], -sol.y_events[0][1:,2], c='black', s=10))
+    ax[1].plot(sol.y[0]*np.cos(sol.y[1]), sol.y[0]*np.sin(sol.y[1]))
 
 def periodic(ksi_init, pksi_init, tol, steps, rc):
     """
@@ -139,6 +139,8 @@ def orbit(ksi_init, pksi_init, tol, steps, rc):
 
     
     
-ax.set_xlabel("ξ")
-ax.set_ylabel("$P_ξ$")
-ax.set_box_aspect(1)
+ax[0].set_xlabel("ξ")
+ax[0].set_ylabel("$P_ξ$")
+ax[0].set_box_aspect(1)
+ax[1].set_box_aspect(1)
+
