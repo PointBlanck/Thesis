@@ -70,7 +70,7 @@ def integrate(ksi_init, pksi_init, tol, steps, rc):
     # Integrate
     period = 2*np.pi/(omegac)
     t_span = (0, steps*period)
-    sol = scpint.solve_ivp(system, t_span, y0, rtol=tol, events=event, method="Radau")
+    sol = scpint.solve_ivp(system, t_span, y0, rtol=tol,atol=tol, max_step=0.005, events=event, method="Radau")
     lines.append(ax.scatter(rc - sol.y_events[0][1:,0], -sol.y_events[0][1:,2], c='black', s=10))
 
 def periodic(ksi_init, pksi_init, tol, steps, rc):
