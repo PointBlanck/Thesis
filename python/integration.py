@@ -1,12 +1,15 @@
 """
 Module containing all the code relevant to the integration of the system.
 """
+# See the module of ivp_solve and debug it and maybe add print statements to track progress more easily.
+# Look for different integrating package.
+# Check performance against Mathematica and make it show which integration method it is using
 
-import sympy as smp
 import numpy as np
 import scipy.integrate as scpint
 import scipy.optimize as scpopt
 import matplotlib.pyplot as plt
+import datetime as dt
 import potentials as ptns
 
 lines = []
@@ -21,7 +24,7 @@ def system(t, y):
     dphidt = ptns.hamiltonian_dpphi(r, phi, pr ,pphi)
     dprdt = -ptns.hamiltonian_dr(r, phi, pr, pphi)
     dpphidt = -ptns.hamiltonian_dphi(r, phi, pr, pphi)
-    return [drdt, dphidt, dprdt, dpphidt]
+    return np.array([drdt, dphidt, dprdt, dpphidt])
 
 def system1(y, energy, phi0, pphi0):
     """
@@ -44,8 +47,9 @@ def event(t, y):
 # Integrate
 event.direction = -1
 plt.ion()
-fig, ax = plt.subplots(layout='constrained')
+fig, ax = plt.subplots(1,2,layout='constrained')
 def integrate(ksi_init, pksi_init, tol, steps, rc):
+    """ Integrates and stores a single Poincare instance. """
     kappac = ptns.epicyclic_frequency(rc)
     omegac = ptns.angular_velocity(rc)
     pphic = ptns.angular_velocity(rc)*rc**2
@@ -62,7 +66,7 @@ def integrate(ksi_init, pksi_init, tol, steps, rc):
     print('Epicyclic frequency:', kappac)
     print('Angular velocity:', omegac)
     print('Period:', (2*np.pi)/omegac)
-    print('$P_{φc}$', pphic)
+    print("P_φc", pphic)
     print('Energy of cyclic movement:', energy)
     print('Number of periods:', steps)
     print('Initial conditions:', y0)
@@ -70,8 +74,14 @@ def integrate(ksi_init, pksi_init, tol, steps, rc):
     # Integrate
     period = 2*np.pi/(omegac)
     t_span = (0, steps*period)
-    sol = scpint.solve_ivp(system, t_span, y0, rtol=tol,atol=tol, max_step=0.005, events=event, method="Radau")
-    lines.append(ax.scatter(rc - sol.y_events[0][1:,0], -sol.y_events[0][1:,2], c='black', s=10))
+    time1 = dt.datetime.now()
+    sol = scpint.solve_ivp(system, t_span, y0, rtol=tol, atol=tol, vectorized=True, events=event, method="Radau")
+    time2 = dt.datetime.now()
+    print("Integration Status Code:", sol.status)
+    print(sol.message)
+    print("Execution Time:", time2 - time1)
+    lines.append(ax[0].scatter(rc - sol.y_events[0][1:,0], -sol.y_events[0][1:,2], c='black', s=10))
+    ax[1].plot(sol.y[0]*np.cos(sol.y[1]), sol.y[0]*np.sin(sol.y[1]))
 
 def periodic(ksi_init, pksi_init, tol, steps, rc):
     """
@@ -129,6 +139,8 @@ def orbit(ksi_init, pksi_init, tol, steps, rc):
 
     
     
-ax.set_xlabel("ξ")
-ax.set_ylabel("$P_ξ$")
-ax.set_box_aspect(1)
+ax[0].set_xlabel("ξ")
+ax[0].set_ylabel("$P_ξ$")
+ax[0].set_box_aspect(1)
+ax[1].set_box_aspect(1)
+
